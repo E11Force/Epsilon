@@ -13,6 +13,31 @@ private:
 	short epRow = -1, epCol = -1; // En passant target square cords (that just jumped over)
 
 public:
+	void returnMove(vector<int> Move)
+	{
+		Board[Move[0]][Move[1]] = Board[Move[2]][Move[3]];
+		Board[Move[2]][Move[3]] = Move[4];
+		MoveTurn = !MoveTurn;
+	}
+
+	void makeMove(vector<int> Move)
+	{
+		Board[Move[2]][Move[3]] = Board[Move[0]][Move[1]];
+		Board[Move[0]][Move[1]] = '.';
+		MoveTurn = !MoveTurn;
+	}
+
+	bool isAccessible(char targetPiece)
+	{
+		switch (MoveTurn)
+		{
+		case true:
+			return (islower(targetPiece) || targetPiece == '.');
+		case false:
+			return (isupper(targetPiece) || targetPiece == '.');
+		}
+	}
+
 	void boardPrint()
 	{
 		cout << "   ";
@@ -59,33 +84,34 @@ public:
 		}
 	}
 
-	vector<int> generateMoves()
+	vector<vector<int>> generateMoves()
 	{
 		int knightRow[8] = { -1,1,2,2,1,-1,-2,-2 };
 		int knightCol[8] = { -2,-2,-1,1,2,2,1,-1 };
+
+		vector<vector<int>> Moves;
 
 		for (int i = 0; i < 8; i++)
 		{
 			for (int j = 0; j < 8; j++)
 			{
-				if (Board[i][j] == 'N')
+				if (Board[i][j] == (MoveTurn ? 'N' : 'n'))
 				{
 					for (int k = 0; k < 8; k++)
 					{
 						int newRow = (i + knightRow[k]);
 						int newCol = (j + knightCol[k]);
 
-						if ((newRow < 8 && newRow >= 0) && (newCol < 8 && newCol >= 0) && ((islower(Board[newRow][newCol])) || (Board[newRow][newCol] == '.')))
+						if ((newRow < 8 && newRow >= 0) && (newCol < 8 && newCol >= 0) && isAccessible(Board[newRow][newCol]))
 						{
-							cout << newRow << ' ' << newCol << endl;
-							vector<int> Move = { i, j, newRow, newCol };
+							vector<int> Move = { i, j, newRow, newCol, Board[newRow][newCol]};
+							Moves.push_back(Move);
 						}
 					}
-					cout << endl;
 				}
 			}
 		}
-		return vector<int>(0, 0);
+		return Moves;
 	}
 };
 
@@ -95,5 +121,12 @@ int main()
 	ChessBoard BoardStruct;
 	BoardStruct.setBoardStartPos();
 	BoardStruct.boardPrint();
-	BoardStruct.generateMoves();
+	vector<vector<int>> Moves = BoardStruct.generateMoves();
+
+	for (int i = 0; i < Moves.size(); i++)
+	{
+		BoardStruct.makeMove(Moves[i]);
+		BoardStruct.boardPrint();
+		BoardStruct.returnMove(Moves[i]);
+	}
 }

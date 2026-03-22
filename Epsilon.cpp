@@ -88,6 +88,12 @@ public:
 	{
 		int knightRow[8] = { -1,1,2,2,1,-1,-2,-2 };
 		int knightCol[8] = { -2,-2,-1,1,2,2,1,-1 };
+		int rookRow[4] = { -1,0,1,0 };
+		int rookCol[4] = { 0,-1,0,1 };
+		int bishopRow[4] = { -1, 1, 1, -1 };
+		int bishopCol[4] = { -1, -1, 1, 1 };
+		int queenRow[8] = { -1, 0, 1, 1, 1, 0, -1, -1 };
+		int queenCol[8] = { -1, -1, -1, 0, 1, 1, 1, 0 };
 
 		vector<vector<int>> Moves;
 
@@ -95,7 +101,7 @@ public:
 		{
 			for (int j = 0; j < 8; j++)
 			{
-				if (Board[i][j] == (MoveTurn ? 'N' : 'n'))
+				if (Board[i][j] == (MoveTurn ? 'N' : 'n')) // knight
 				{
 					for (int k = 0; k < 8; k++)
 					{
@@ -105,6 +111,110 @@ public:
 						if ((newRow < 8 && newRow >= 0) && (newCol < 8 && newCol >= 0) && isAccessible(Board[newRow][newCol]))
 						{
 							vector<int> Move = { i, j, newRow, newCol, Board[newRow][newCol]};
+							Moves.push_back(Move);
+						}
+					}
+				}
+				else if (Board[i][j] == (MoveTurn ? 'R' : 'r')) // THE ROOOOOOOKK!!!!!
+				{
+					for (int k = 0; k < 4; k++)
+					{
+						int newRow = (i + rookRow[k]);
+						int newCol = (j + rookCol[k]);
+
+						while ((newRow < 8 && newRow >= 0) && (newCol < 8 && newCol >= 0))
+						{
+							if (Board[newRow][newCol] == '.')
+							{
+								vector<int> Move = { i, j, newRow, newCol, Board[newRow][newCol] };
+								Moves.push_back(Move);
+								newRow += rookRow[k];
+								newCol += rookCol[k];
+
+							}
+							else if (isAccessible(Board[newRow][newCol]))
+							{
+								vector<int> Move = { i, j, newRow, newCol, Board[newRow][newCol] };
+								Moves.push_back(Move);
+								break;
+							}
+							else
+							{
+								break;
+							}
+						}
+					}
+				}
+				else if (Board[i][j] == (MoveTurn ? 'B' : 'b')) // bishop
+				{
+					for (int k = 0; k < 4; k++)
+					{
+						int newRow = (i + bishopRow[k]);
+						int newCol = (j + bishopCol[k]);
+
+						while ((newRow < 8 && newRow >= 0) && (newCol < 8 && newCol >= 0))
+						{
+							if (Board[newRow][newCol] == '.')
+							{
+								vector<int> Move = { i, j, newRow, newCol, Board[newRow][newCol] };
+								Moves.push_back(Move);
+								newRow += bishopRow[k];
+								newCol += bishopCol[k];
+
+							}
+							else if (isAccessible(Board[newRow][newCol]))
+							{
+								vector<int> Move = { i, j, newRow, newCol, Board[newRow][newCol] };
+								Moves.push_back(Move);
+								break;
+							}
+							else
+							{
+								break;
+							}
+						}
+					}
+				}
+				else if (Board[i][j] == (MoveTurn ? 'Q' : 'q')) // queen
+				{
+					for (int k = 0; k < 8; k++)
+					{
+						int newRow = (i + queenRow[k]);
+						int newCol = (j + queenCol[k]);
+
+						while ((newRow < 8 && newRow >= 0) && (newCol < 8 && newCol >= 0))
+						{
+							if (Board[newRow][newCol] == '.')
+							{
+								vector<int> Move = { i, j, newRow, newCol, Board[newRow][newCol] };
+								Moves.push_back(Move);
+								newRow += queenRow[k];
+								newCol += queenCol[k];
+
+							}
+							else if (isAccessible(Board[newRow][newCol]))
+							{
+								vector<int> Move = { i, j, newRow, newCol, Board[newRow][newCol] };
+								Moves.push_back(Move);
+								break;
+							}
+							else
+							{
+								break;
+							}
+						}
+					}
+				}
+				else if (Board[i][j] == (MoveTurn ? 'K' : 'k')) // king
+				{
+					for (int k = 0; k < 8; k++)
+					{
+						int newRow = (i + queenRow[k]);
+						int newCol = (j + queenCol[k]);
+
+						if ((newRow < 8 && newRow >= 0) && (newCol < 8 && newCol >= 0) && isAccessible(Board[newRow][newCol]))
+						{
+							vector<int> Move = { i, j, newRow, newCol, Board[newRow][newCol] };
 							Moves.push_back(Move);
 						}
 					}

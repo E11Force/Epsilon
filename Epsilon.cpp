@@ -3,7 +3,9 @@
 
 using namespace std;
 
-void Board::drawBitboard() {
+#pragma region DebugUI
+
+void Board::drawBoard() {
 	for (int i = 7; i >= 0; i--) // white is down the screen
 	{
 		for (int j = 0; j < 8; j++)
@@ -71,6 +73,46 @@ void Board::drawBitboard() {
 		}
 		cout << endl;
 	}
+	cout << endl;
+}
+
+void Board::drawBitBoard(unsigned long long bitBoard)
+{
+	for (int i = 7; i >= 0; i--) {
+		for (int j = 0; j < 8; j++) {
+			unsigned long long absPosition = (1ULL << (i * 8 + j));
+			if (bitBoard & absPosition)
+			{
+				cout << "1 ";
+			}
+			else
+			{
+				cout << ". ";
+			}
+		}
+		cout << endl;
+	}
+	cout << endl;
+}
+
+#pragma endregion
+
+unsigned long long Board::genKnightMoves() { // all legal knight moves on bitboard
+	
+	unsigned long long moveBitboard = 0;
+
+	if (moveTurn == true) { // White
+		unsigned long long bufferBitboard = (knightBitboard & whiteBitboard); // getting all white knights on the board
+		moveBitboard |= ((bufferBitboard << 17) & notAMask) | ((bufferBitboard << 10) & notABMask) | ((bufferBitboard >> 6) & notABMask) | ((bufferBitboard >> 15) & notAMask) | ((bufferBitboard >> 17) & notHMask) | ((bufferBitboard >> 10) & notGHMask) | ((bufferBitboard << 6) & notGHMask) | ((bufferBitboard << 15) & notHMask);
+		moveBitboard &= ~whiteBitboard;
+		return moveBitboard;
+	}
+	else { // Black
+		unsigned long long bufferBitboard = (knightBitboard & blackBitboard);
+		moveBitboard |= ((bufferBitboard << 17) & notAMask) | ((bufferBitboard << 10) & notABMask) | ((bufferBitboard >> 6) & notABMask) | ((bufferBitboard >> 15) & notAMask) | ((bufferBitboard >> 17) & notHMask) | ((bufferBitboard >> 10) & notGHMask) | ((bufferBitboard << 6) & notGHMask) | ((bufferBitboard << 15) & notHMask);
+		moveBitboard &= ~blackBitboard;
+		return moveBitboard;
+	}
 }
 
 void Board::initStartPos() {
@@ -87,4 +129,6 @@ void Board::initStartPos() {
 
 int main() {
 	Board ChessBoard;
+	ChessBoard.drawBoard();
+	ChessBoard.drawBitBoard(ChessBoard.genKnightMoves());
 }

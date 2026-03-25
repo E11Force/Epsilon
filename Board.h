@@ -22,13 +22,15 @@ private:
 	unsigned long long kingBitboard = 0; // 1 - king, 0 - not king
 
 	// Main Rules
-	bool moveTurn; // true - white turn, false - black turn
+	bool moveTurn = true; // true - white turn, false - black turn
 	bool CastlingRights[4]{1,1,1,1}; // 0 - white short, 1 - white long, 2 - black short, 3 - black long 
 	char epRow = -1, epCol = -1; // en passant cords
 
 public:
-	void drawBitboard();
+	void drawBoard();
+	void drawBitBoard(unsigned long long bitBoard);
 	void initStartPos();
+	unsigned long long genKnightMoves();
 
 	Board() { initStartPos(); }
 };

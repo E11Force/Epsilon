@@ -95,10 +95,27 @@ void Board::drawBitBoard(unsigned long long bitBoard)
 	cout << endl;
 }
 
+void Board::setTestPos()
+{
+	existenceBitboard = 0;
+	whiteBitboard = 0;
+	blackBitboard = 0;
+	pawnBitboard = 0;
+	knightBitboard = 0;
+	bishopBitboard = 0;
+	rookBitboard = 0;
+	queenBitboard = 0;
+	kingBitboard = 0;
+
+	//kingBitboard |= (1ULL << 34);
+	//whiteBitboard |= (1ULL << 34);
+	//drawBitBoard(genKingMoves());
+	//initStartPos();
+}
+
 #pragma endregion
 
 unsigned long long Board::genKnightMoves() { // all legal knight moves on bitboard
-	
 	unsigned long long moveBitboard = 0;
 
 	if (moveTurn == true) { // White
@@ -115,16 +132,78 @@ unsigned long long Board::genKnightMoves() { // all legal knight moves on bitboa
 	}
 }
 
+unsigned long long Board::genKingMoves() {
+	unsigned long long moveBitboard = 0;
+
+	if (moveTurn == true) {
+		unsigned long long bufferBitboard = (kingBitboard & whiteBitboard);
+		moveBitboard |= ((bufferBitboard << 8) | ((bufferBitboard << 9) & notAMask) | ((bufferBitboard << 1) & notAMask) | ((bufferBitboard >> 7) & notAMask) | (bufferBitboard >> 8) | ((bufferBitboard >> 9) & notHMask) | ((bufferBitboard >> 1) & notHMask) | ((bufferBitboard << 7) & notHMask));
+		moveBitboard &= ~whiteBitboard;
+		return moveBitboard;
+	}
+	else {
+		unsigned long long bufferBitboard = (kingBitboard & blackBitboard);
+		moveBitboard |= ((bufferBitboard << 8) | ((bufferBitboard << 9) & notAMask) | ((bufferBitboard << 1) & notAMask) | ((bufferBitboard >> 7) & notAMask) | (bufferBitboard >> 8) | ((bufferBitboard >> 9) & notHMask) | ((bufferBitboard >> 1) & notHMask) | ((bufferBitboard << 7) & notHMask));
+		moveBitboard &= ~blackBitboard;
+		return moveBitboard;
+	}
+}
+
+unsigned long long Board::genSinglePawnMoves() { // single move (+8)
+	unsigned long long moveBitboard = 0;
+
+	if (moveTurn == true) {
+		unsigned long long bufferBitboard = (pawnBitboard & whiteBitboard);
+		moveBitboard |= (bufferBitboard << 8);
+		moveBitboard &= ~existenceBitboard;
+		return moveBitboard;
+	}
+	else {
+		unsigned long long bufferBitboard = (pawnBitboard & blackBitboard);
+		moveBitboard |= (bufferBitboard >> 8);
+		moveBitboard &= ~existenceBitboard;
+		return moveBitboard;
+	}
+}
+
+unsigned long long Board::genDoublePawnMoves() {
+	unsigned long long moveBitboard = genSinglePawnMoves();
+
+	if (moveTurn == true) {
+		moveBitboard |= ((moveBitboard << 8) & ~existenceBitboard & Rank4Mask);
+		return moveBitboard;
+	}
+	else {
+		moveBitboard |= ((moveBitboard >> 8) & ~existenceBitboard & Rank5Mask);
+		return moveBitboard;
+	}
+}
+
+unsigned long long Board::genPawnMoves() {
+	unsigned long long moveBitboard = genDoublePawnMoves();
+
+	if (moveTurn == true) {
+		unsigned long long bufferBitboard = (pawnBitboard & whiteBitboard);
+		moveBitboard |= ((((bufferBitboard << 7) & notHMask) | ((bufferBitboard << 9) & notAMask)) & blackBitboard);
+		return moveBitboard;
+	}
+	else {
+		unsigned long long bufferBitboard = (pawnBitboard & blackBitboard);
+		moveBitboard |= ((((bufferBitboard >> 9) & notHMask) | ((bufferBitboard >> 7) & notAMask)) & whiteBitboard);
+		return moveBitboard;
+	}
+}
+
 void Board::initStartPos() {
-	pawnBitboard |=		 (0xFFULL << 8) | (0xFFULL << 48);
-	rookBitboard |=		 (0x81ULL) | (0x81ULL << 56);
-	bishopBitboard |=	 (0x24ULL) | (0x24ULL << 56);
-	knightBitboard |=	 (0x42ULL) | (0x42ULL << 56);
-	queenBitboard |=	 (0x8ULL) | (0x8ULL << 56);
-	kingBitboard |=		 (0x10ULL) | (0x10ULL << 56);
-	whiteBitboard |=	 (0xFFULL) | (0xFFULL << 8);
-	blackBitboard |=	 (0xFFULL << 48) | (0xFFULL << 56);
-	existenceBitboard |= (whiteBitboard | blackBitboard);
+	pawnBitboard =		 (0xFFULL << 8) | (0xFFULL << 48);
+	rookBitboard =		 (0x81ULL) | (0x81ULL << 56);
+	bishopBitboard =	 (0x24ULL) | (0x24ULL << 56);
+	knightBitboard =	 (0x42ULL) | (0x42ULL << 56);
+	queenBitboard =		 (0x8ULL) | (0x8ULL << 56);
+	kingBitboard =		 (0x10ULL) | (0x10ULL << 56);
+	whiteBitboard =		 (0xFFULL) | (0xFFULL << 8);
+	blackBitboard =		 (0xFFULL << 48) | (0xFFULL << 56);
+	existenceBitboard =  (whiteBitboard | blackBitboard); 
 }
 
 int main() {

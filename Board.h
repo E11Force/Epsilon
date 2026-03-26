@@ -3,10 +3,13 @@
 using namespace std;
 
 // initiating constexprs
-constexpr unsigned long long notAMask = (0xFEFEFEFEFEFEFEFE);
-constexpr unsigned long long notHMask = (0x7F7F7F7F7F7F7F7F);
-constexpr unsigned long long notABMask = (0xFCFCFCFCFCFCFCFC);
-constexpr unsigned long long notGHMask = (0x3F3F3F3F3F3F3F3F);
+constexpr unsigned long long notAMask = (0xFEFEFEFEFEFEFEFEULL);
+constexpr unsigned long long notHMask = (0x7F7F7F7F7F7F7F7FULL);
+constexpr unsigned long long notABMask = (0xFCFCFCFCFCFCFCFCULL);
+constexpr unsigned long long notGHMask = (0x3F3F3F3F3F3F3F3FULL);
+constexpr unsigned long long Rank4Mask = (0xFF000000ULL);
+constexpr unsigned long long Rank5Mask = (0xFF00000000ULL);
+
 
 class Board {
 private:	
@@ -30,7 +33,12 @@ public:
 	void drawBoard();
 	void drawBitBoard(unsigned long long bitBoard);
 	void initStartPos();
+	void setTestPos();
 	unsigned long long genKnightMoves();
+	unsigned long long genKingMoves();
+	unsigned long long genSinglePawnMoves();
+	unsigned long long genDoublePawnMoves();
+	unsigned long long genPawnMoves();
 
 	Board() { initStartPos(); }
 };

@@ -1,7 +1,0 @@
-<Solution>
-  <Configurations>
-    <Platform Name="x64" />
-    <Platform Name="x86" />
-  </Configurations>
-  <Project Path="Epsilon.vcxproj" Id="f3e94f6f-d55e-4b89-b728-16d21e214b4c" />
-</Solution>

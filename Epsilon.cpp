@@ -194,6 +194,47 @@ unsigned long long Board::genPawnMoves() {
 	}
 }
 
+unsigned long long Board::RookRaycasting(char absPos, unsigned long long artificialBitboard) {
+	unsigned long long moveBitboard = 0;
+	unsigned long long raycastBuffer = (1ULL << absPos);
+
+	while ((raycastBuffer & notHMask) != 0)
+	{
+		raycastBuffer = raycastBuffer << 1;
+		moveBitboard |= raycastBuffer;
+		if ((raycastBuffer & ~artificialBitboard) == 0) { break; }
+	}
+
+	raycastBuffer = (1ULL << absPos);
+
+	while ((raycastBuffer & notAMask) != 0)
+	{
+		raycastBuffer = raycastBuffer >> 1;
+		moveBitboard |= raycastBuffer;
+		if ((raycastBuffer & ~artificialBitboard) == 0) { break; }
+	}
+
+	raycastBuffer = (1ULL << absPos);
+
+	while ((raycastBuffer & not8Mask) != 0)
+	{
+		raycastBuffer = raycastBuffer << 8;
+		moveBitboard |= raycastBuffer;
+		if ((raycastBuffer & ~artificialBitboard) == 0) { break; }
+	}
+
+	raycastBuffer = (1ULL << absPos);
+
+	while ((raycastBuffer & not1Mask) != 0)
+	{
+		raycastBuffer = raycastBuffer >> 8;
+		moveBitboard |= raycastBuffer;
+		if ((raycastBuffer & ~artificialBitboard) == 0) { break; }
+	}
+
+	return moveBitboard;
+}
+
 void Board::initStartPos() {
 	pawnBitboard =		 (0xFFULL << 8) | (0xFFULL << 48);
 	rookBitboard =		 (0x81ULL) | (0x81ULL << 56);
@@ -209,5 +250,5 @@ void Board::initStartPos() {
 int main() {
 	Board ChessBoard;
 	ChessBoard.drawBoard();
-	ChessBoard.drawBitBoard(ChessBoard.genKnightMoves());
+	ChessBoard.drawBitBoard(ChessBoard.RookRaycasting(28,0));
 }

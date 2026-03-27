@@ -2,9 +2,11 @@
 
 using namespace std;
 
-// initiating constexprs
+// initiating constexpr masks
 constexpr unsigned long long notAMask = (0xFEFEFEFEFEFEFEFEULL);
 constexpr unsigned long long notHMask = (0x7F7F7F7F7F7F7F7FULL);
+constexpr unsigned long long not1Mask = (0xFFFFFFFFFFFFFF00ULL);
+constexpr unsigned long long not8Mask = (0xFFFFFFFFFFFFFFULL);
 constexpr unsigned long long notABMask = (0xFCFCFCFCFCFCFCFCULL);
 constexpr unsigned long long notGHMask = (0x3F3F3F3F3F3F3F3FULL);
 constexpr unsigned long long Rank4Mask = (0xFF000000ULL);
@@ -24,6 +26,10 @@ private:
 	unsigned long long queenBitboard = 0; // 1 - queen, 0 - not queen
 	unsigned long long kingBitboard = 0; // 1 - king, 0 - not king
 
+	// Magic Bitboards
+
+	inline static unsigned long long MagicRooks[64][4096];
+
 	// Main Rules
 	bool moveTurn = true; // true - white turn, false - black turn
 	bool CastlingRights[4]{1,1,1,1}; // 0 - white short, 1 - white long, 2 - black short, 3 - black long 
@@ -39,6 +45,7 @@ public:
 	unsigned long long genSinglePawnMoves();
 	unsigned long long genDoublePawnMoves();
 	unsigned long long genPawnMoves();
+	unsigned long long RookRaycasting(char absPos, unsigned long long artificialBitboard);
 
 	Board() { initStartPos(); }
 };

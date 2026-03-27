@@ -3,8 +3,5 @@
 !/.gitignore
 !*.cpp
 !*.h
-!*.slnx
-!*.vcxproj
-!*.filters
 !*.md
 !/LICENSE

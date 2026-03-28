@@ -28,7 +28,8 @@ private:
 
 	// Magic Bitboards
 
-	inline static unsigned long long MagicRooks[64][4096];
+	inline static unsigned long long MagicRook[64][4096];
+	inline static unsigned long long MagicBishop[64][4096];
 
 	// Main Rules
 	bool moveTurn = true; // true - white turn, false - black turn
@@ -46,6 +47,9 @@ public:
 	unsigned long long genDoublePawnMoves();
 	unsigned long long genPawnMoves();
 	unsigned long long RookRaycasting(char absPos, unsigned long long artificialBitboard);
+	unsigned long long BishopRaycasting(char absPos, unsigned long long artificialBitboard);
+	unsigned long long RookBlockerMask(char absPos);
+	unsigned long long BishopBlockerMask(char absPos);
 
 	Board() { initStartPos(); }
 };

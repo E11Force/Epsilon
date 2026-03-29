@@ -16,15 +16,23 @@ constexpr unsigned long long Rank5Mask = (0xFF00000000ULL);
 class Board {
 private:	
 	// Bitboards
-	unsigned long long existenceBitboard = 0; // 1 - piece, 0 - empty
-	unsigned long long whiteBitboard = 0; // 1 - white piece, 0 - not white piece
-	unsigned long long blackBitboard = 0; // 1 - black piece, 0 - not black piece
-	unsigned long long pawnBitboard = 0; // 1 - pawn, 0 - not pawn
-	unsigned long long knightBitboard = 0; // 1 - knight, 0 - not knight
-	unsigned long long bishopBitboard = 0; // 1 - bishop, 0 - not bishop
-	unsigned long long rookBitboard = 0; // 1 - THE ROOOOK!, 0 - not the rook
-	unsigned long long queenBitboard = 0; // 1 - queen, 0 - not queen
-	unsigned long long kingBitboard = 0; // 1 - king, 0 - not king
+	unsigned long long Bitboards[9];
+	char BitboardIndex[64];
+
+	enum BitboardsEnum {
+		Void = -1,
+		Existence = 0,
+		White = 1,
+		Black = 2,
+		Pawn = 3,
+		Knight = 4,
+		Bishop = 5,
+		Rook = 6,
+		Queen = 7,
+		King = 8
+	};
+
+	char pieceLetters[9]{'P','N','B','R','Q','K'};
 
 	// Magic Bitboards
 
@@ -48,8 +56,13 @@ public:
 	unsigned long long genPawnMoves();
 	unsigned long long RookRaycasting(char absPos, unsigned long long artificialBitboard);
 	unsigned long long BishopRaycasting(char absPos, unsigned long long artificialBitboard);
-	unsigned long long RookBlockerMask(char absPos);
-	unsigned long long BishopBlockerMask(char absPos);
+	unsigned long long QueenRaycasting(char absPos, unsigned long long artificialBitboard);
+	void MakeMove(int source, int destination);
+	
+	// TODO: MagicBitboards after Minimal Vital Product
+	//unsigned long long RookBlockerMask(char absPos);
+	//unsigned long long BishopBlockerMask(char absPos);
+	//unsigned long long enumerateAllSubsetsOfTheBitboardUniverse(unsigned long long mask, unsigned long long **MagicBitboard);
 
 	Board() { initStartPos(); }
 };

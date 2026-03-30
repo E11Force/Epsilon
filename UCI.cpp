@@ -15,6 +15,13 @@ void ParseMove(string moveString, Board& board) { // slicing them in two to make
 	board.MakeMove(source,dest);
 }
 
+string SquareToUCI(int index) {
+	string uciIndex = "  ";
+	uciIndex[0] = index % 8 + 'a';
+	uciIndex[1] = index / 8 + '1';
+	return uciIndex;
+}
+
 void InitUCI(Board& board) // UCI console, nothing special
 {
 	string command;
@@ -37,7 +44,17 @@ void InitUCI(Board& board) // UCI console, nothing special
 			}
 		}
 		else if (command.substr(0, 2) == "go") {
-			cout << "bestmove e2e4" << endl;
+			vector<Move> moves = board.GenerateLegalMoves();
+			Move myMove = moves[rand() % moves.size()];
+			cout << "bestmove " << SquareToUCI(myMove.source) + SquareToUCI(myMove.dest) << endl;
+		}
+		else if (command == "debug") {
+			vector<Move> LegalMoves = board.GenerateLegalMoves();
+			for (int i = 0; i < LegalMoves.size(); i++)
+			{
+				cout << i << ' ' << SquareToUCI(LegalMoves[i].source) + SquareToUCI(LegalMoves[i].dest) << endl;
+			}
+			board.drawBoard();
 		}
 	}
 }

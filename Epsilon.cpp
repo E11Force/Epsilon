@@ -1,6 +1,6 @@
 #include <iostream>
 #include "Board.h" // Board class with majority of variables
-#include "UCI.h";
+#include "UCI.h"
 
 using namespace std;
 

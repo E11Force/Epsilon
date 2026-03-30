@@ -69,6 +69,9 @@ void Board::setTestPos()
 }
 
 void Board::initStartPos() {
+	moveTurn = true;
+	CastlingRights[0] = 1; CastlingRights[1] = 1; CastlingRights[2] = 1; CastlingRights[3] = 1;
+	epRow = -1; epCol = -1;
 	Bitboards[Pawn] = (0xFFULL << 8) | (0xFFULL << 48);
 	Bitboards[Rook] = (0x81ULL) | (0x81ULL << 56);
 	Bitboards[Bishop] = (0x24ULL) | (0x24ULL << 56);
@@ -109,7 +112,7 @@ void Board::initStartPos() {
 	}
 }
 
-void Board::MakeMove(int source, int destination) {
+void Board::MakeMove(char source, char destination) {
 	unsigned long long sourceBitboard = (1ULL << source); // same energy as down comment
 	unsigned long long destinationBitboard = (1ULL << destination); // mask of destBitboard
 	char myColor = moveTurn ? White : Black; // whos going to move???
@@ -133,4 +136,21 @@ void Board::MakeMove(int source, int destination) {
 	moveTurn = !moveTurn;
 
 	// Rest in piece little pawn 28.03.2026 - 29.03.2026 10:39:04 
+}
+
+void Board::UnmakeMove(char source, char destination, char capturedPiece) {
+	moveTurn = !moveTurn;
+	char myColor = moveTurn ? White : Black;
+	char enemyColor = moveTurn ? Black : White;
+	unsigned long long sourceMask = (1ULL << source);
+	unsigned long long destMask = (1ULL << destination);
+	BitboardIndex[source] = BitboardIndex[destination];
+	BitboardIndex[destination] = capturedPiece;
+	Bitboards[BitboardIndex[source]] &= ~destMask;
+	Bitboards[BitboardIndex[source]] |= sourceMask;
+	if (capturedPiece != Void) { Bitboards[capturedPiece] |= destMask; }
+	Bitboards[myColor] |= sourceMask;
+	Bitboards[myColor] &= ~destMask;
+	if (capturedPiece != Void) { Bitboards[enemyColor] |= destMask; }
+	Bitboards[Existence] = Bitboards[White] | Bitboards[Black];
 }

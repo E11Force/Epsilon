@@ -151,8 +151,74 @@ unsigned long long Board::QueenRaycasting(char absPos, unsigned long long artifi
 	return BishopRaycasting(absPos, artificialBitboard) | RookRaycasting(absPos, artificialBitboard);
 }
 
-vector<Move> GenerateAllMoves() {
+vector<Move> Board::GenerateAllMoves() {
+	vector<Move> LegalMoves;
+	unsigned long long currentBitboard = moveTurn ? Bitboards[White] : Bitboards[Black];
+	unsigned long long BitboardMask = moveTurn ? Bitboards[White] : Bitboards[Black];
+	unsigned long long bufferBitboard = 0;
 
+	while (currentBitboard != 0) {
+		unsigned long index;
+		_BitScanForward64(&index, currentBitboard); // getting first bit of mask
+		char pieceID = BitboardIndex[index];
+		if (pieceID != Void) {
+			if (pieceID == Pawn) { bufferBitboard = genPawnMoves(index); }
+			else if (pieceID == Rook) { bufferBitboard = RookRaycasting(index, Bitboards[Existence]) & ~BitboardMask; }
+			else if (pieceID == Bishop) { bufferBitboard = BishopRaycasting(index, Bitboards[Existence]) & ~BitboardMask; }
+			else if (pieceID == Queen) { bufferBitboard = QueenRaycasting(index, Bitboards[Existence]) & ~BitboardMask; }
+			else if (pieceID == Knight) { bufferBitboard = genKnightMoves(index); }
+			else if (pieceID == King) { bufferBitboard = genKingMoves(index); }
+		}
+
+		while (bufferBitboard != 0) {
+			unsigned long moveIndx;
+			_BitScanForward64(&moveIndx, bufferBitboard);
+			Move move; move.dest = moveIndx; move.source = index; move.capturedPiece = BitboardIndex[moveIndx];
+			LegalMoves.push_back(move);
+			bufferBitboard &= bufferBitboard - 1;
+		}
+		currentBitboard &= currentBitboard - 1;
+	}
+	return LegalMoves;
+}
+
+bool Board::isSquareAttacked(char absPos) { // making all attack masks from our position to check if there is someone attacking us (reverse attack)
+	unsigned long long squareMask = (1ULL << absPos);
+	unsigned long long currentBoard = moveTurn ? Bitboards[Black] : Bitboards[White];
+	unsigned long long knightBuffer = genKnightMoves(absPos);
+	if ((knightBuffer & (currentBoard & Bitboards[Knight])) != 0) { return true; }
+	unsigned long long rookBuffer = RookRaycasting(absPos, Bitboards[Existence]);
+	if ((rookBuffer & (currentBoard & Bitboards[Rook])) != 0 || (rookBuffer & (currentBoard & Bitboards[Queen])) != 0) { return true; }
+	unsigned long long bishopBuffer = BishopRaycasting(absPos, Bitboards[Existence]);
+	if ((bishopBuffer & (currentBoard & Bitboards[Bishop])) != 0 || (bishopBuffer & (currentBoard & Bitboards[Queen])) != 0) { return true; }
+	unsigned long long kingBuffer = genKingMoves(absPos);
+	if ((kingBuffer & (currentBoard & Bitboards[King])) != 0) { return true; }
+	if (moveTurn == true) {
+		if (((squareMask << 7) & (currentBoard & Bitboards[Pawn]) & notHMask) != 0 || ((squareMask << 9) & (currentBoard & Bitboards[Pawn]) & notAMask) != 0) { return true; }
+	}
+	else if (moveTurn == false) {
+		if (((squareMask >> 7) & (currentBoard & Bitboards[Pawn]) & notAMask) != 0 || ((squareMask >> 9) & (currentBoard & Bitboards[Pawn]) & notHMask) != 0) { return true; }
+	}
+	return false;
+}
+
+vector<Move> Board::GenerateLegalMoves() {
+	vector<Move> LegalMoves;
+	vector<Move> pseudoMoves = GenerateAllMoves();
+
+	for (int i = 0; i < pseudoMoves.size(); i++) {
+		MakeMove(pseudoMoves[i].source, pseudoMoves[i].dest);
+		moveTurn = !moveTurn;
+		unsigned long long currentBitboard = moveTurn ? Bitboards[White] : Bitboards[Black];
+		unsigned long kingIndx;
+		_BitScanForward64(&kingIndx, Bitboards[King] & currentBitboard);
+		if (isSquareAttacked(kingIndx) == false) { LegalMoves.push_back(pseudoMoves[i]); }
+		moveTurn = !moveTurn;
+		UnmakeMove(pseudoMoves[i].source, pseudoMoves[i].dest, pseudoMoves[i].capturedPiece);
+		
+	}
+	
+	return LegalMoves;
 }
 
 // TODO: MagicBitboards after Minimal Vital Product

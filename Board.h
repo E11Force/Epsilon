@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 using namespace std;
 
@@ -15,6 +16,7 @@ constexpr unsigned long long Rank5Mask = (0xFF00000000ULL);
 struct Move {
 	short source;
 	short dest;
+	char capturedPiece;
 };
 
 class Board {
@@ -60,8 +62,12 @@ public:
 	unsigned long long RookRaycasting(char absPos, unsigned long long artificialBitboard);
 	unsigned long long BishopRaycasting(char absPos, unsigned long long artificialBitboard);
 	unsigned long long QueenRaycasting(char absPos, unsigned long long artificialBitboard);
-	void MakeMove(int source, int destination);
-	
+	bool isSquareAttacked(char absPos);
+	void MakeMove(char source, char destination);
+	void UnmakeMove(char source, char destination, char capturePiece);
+	vector<Move> GenerateAllMoves();
+	vector<Move> GenerateLegalMoves();
+
 	// TODO: MagicBitboards after Minimal Vital Product
 	//unsigned long long RookBlockerMask(char absPos);
 	//unsigned long long BishopBlockerMask(char absPos);

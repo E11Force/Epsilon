@@ -12,14 +12,18 @@ constexpr unsigned long long notGHMask = (0x3F3F3F3F3F3F3F3FULL);
 constexpr unsigned long long Rank4Mask = (0xFF000000ULL);
 constexpr unsigned long long Rank5Mask = (0xFF00000000ULL);
 
+struct Move {
+	short source;
+	short dest;
+};
 
 class Board {
 private:	
 	// Bitboards
 	unsigned long long Bitboards[9];
-	char BitboardIndex[64];
+	char BitboardIndex[64]; // array with size of real board and values = bitboards enums to quickly take any value from this array and tell which piece is placed on this square
 
-	enum BitboardsEnum {
+	enum BitboardsEnum { // paired with bitboardIndex
 		Void = -1,
 		Existence = 0,
 		White = 1,
@@ -32,12 +36,11 @@ private:
 		King = 8
 	};
 
-	char pieceLetters[9]{'P','N','B','R','Q','K'};
+	char pieceLetters[9]{'P','N','B','R','Q','K'}; // used to fastly place some pieces on the board (if black pieces used with tolower()) always -3 this array
 
 	// Magic Bitboards
-
-	inline static unsigned long long MagicRook[64][4096];
-	inline static unsigned long long MagicBishop[64][4096];
+	//inline static unsigned long long MagicRook[64][4096];
+	//inline static unsigned long long MagicBishop[64][4096];
 
 	// Main Rules
 	bool moveTurn = true; // true - white turn, false - black turn
@@ -49,11 +52,11 @@ public:
 	void drawBitBoard(unsigned long long bitBoard);
 	void initStartPos();
 	void setTestPos();
-	unsigned long long genKnightMoves();
-	unsigned long long genKingMoves();
-	unsigned long long genSinglePawnMoves();
-	unsigned long long genDoublePawnMoves();
-	unsigned long long genPawnMoves();
+	unsigned long long genKnightMoves(char absPos);
+	unsigned long long genKingMoves(char absPos);
+	unsigned long long genSinglePawnMoves(char absPos);
+	unsigned long long genDoublePawnMoves(char absPos);
+	unsigned long long genPawnMoves(char absPos);
 	unsigned long long RookRaycasting(char absPos, unsigned long long artificialBitboard);
 	unsigned long long BishopRaycasting(char absPos, unsigned long long artificialBitboard);
 	unsigned long long QueenRaycasting(char absPos, unsigned long long artificialBitboard);

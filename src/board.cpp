@@ -38,7 +38,7 @@ void Board::initStartPos() {
 	
 	// Colors
 	byColorBB[White] =	0xffff;
-	byColorBB[Black] =	0xffff000000100000;
+	byColorBB[Black] =	0xffff000000000000;
 
 	// Index
 	for (int i = 7; i >= 0; i--) {

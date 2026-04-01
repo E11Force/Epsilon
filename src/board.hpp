@@ -15,7 +15,7 @@ constexpr Bitboard notRank8 =	(0xffffffffffffff);
 constexpr Bitboard rank4 =		(0xff000000);
 constexpr Bitboard rank5 =		(0xff00000000);
 
-class Board {
+class Board { // LERF Mapping
 protected:
 	// Bitboards
 	std::array<Bitboard, 6> byTypeBB; // array with all piece bitboards (uint_fast64_t is more performant than simple uint64_t or ULL) ex. Pawns Rooks..
@@ -52,11 +52,13 @@ public:
 	Bitboard generateKnightMoves(char index);
 	Bitboard generateKingMoves(char index);
 	Bitboard generatePawnMoves(char index);
-
+	Bitboard RookRaycasting(char index);
+	Bitboard BishopRaycasting(char index);
+	Bitboard QueenRaycasting(char index);
 
 	Board() {
 		initStartPos(); 
-		drawBitboard(generatePawnMoves(13));
+		drawBitboard(QueenRaycasting(21));
 		drawBitboard(byColorBB[Black]);
 	} // on create object
 };

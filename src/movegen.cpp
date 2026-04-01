@@ -36,3 +36,77 @@ Bitboard Board::generatePawnMoves(char index) {
 	return PawnMoves;
 }
 
+
+Bitboard Board::RookRaycasting(char index) {
+	Bitboard IndexMask(1ULL << index);
+	Bitboard RookMoves = 0;
+	Bitboard enemyBitboard = moveTurn ? byColorBB[Black] : byColorBB[White];
+	Bitboard currentBitboard = moveTurn ? byColorBB[White] : byColorBB[Black];
+
+	while ((IndexMask & notRank1) != 0) {
+		IndexMask = IndexMask >> 8;
+		RookMoves |= IndexMask;
+		if ((IndexMask & ~enemyBitboard) == 0) { break; }
+	}
+	IndexMask = (1ULL << index);
+	while ((IndexMask & notRank8) != 0) {
+		IndexMask = IndexMask << 8;
+		RookMoves |= IndexMask;
+		if ((IndexMask & ~enemyBitboard) == 0) { break; }
+	}
+	IndexMask = (1ULL << index);
+	while ((IndexMask & notfileA) != 0) {
+		IndexMask = IndexMask >> 1;
+		RookMoves |= IndexMask;
+		if ((IndexMask & ~enemyBitboard) == 0) { break; }
+	}
+	IndexMask = (1ULL << index);
+	while ((IndexMask & notfileH) != 0) {
+		IndexMask = IndexMask << 1;
+		RookMoves |= IndexMask;
+		if ((IndexMask & ~enemyBitboard) == 0) { break; }
+	}
+
+	RookMoves = RookMoves & ~currentBitboard;
+
+	return RookMoves;
+}
+
+Bitboard Board::BishopRaycasting(char index) {
+	Bitboard IndexMask(1ULL << index);
+	Bitboard BishopMoves = 0;
+	Bitboard enemyBitboard = moveTurn ? byColorBB[Black] : byColorBB[White];
+	Bitboard currentBitboard = moveTurn ? byColorBB[White] : byColorBB[Black];
+
+	while ((IndexMask & notRank8 & notfileH) != 0) {
+		IndexMask = IndexMask << 9;
+		BishopMoves |= IndexMask;
+		if ((IndexMask & ~enemyBitboard) == 0) { break; }
+	}
+	IndexMask = (1ULL << index);
+	while ((IndexMask & notRank1 & notfileH) != 0) {
+		IndexMask = IndexMask >> 7;
+		BishopMoves |= IndexMask;
+		if ((IndexMask & ~enemyBitboard) == 0) { break; }
+	}
+	IndexMask = (1ULL << index);
+	while ((IndexMask & notfileA & notRank1) != 0) {
+		IndexMask = IndexMask >> 9;
+		BishopMoves |= IndexMask;
+		if ((IndexMask & ~enemyBitboard) == 0) { break; }
+	}
+	IndexMask = (1ULL << index);
+	while ((IndexMask & notfileA & notRank8) != 0) {
+		IndexMask = IndexMask << 7;
+		BishopMoves |= IndexMask;
+		if ((IndexMask & ~enemyBitboard) == 0) { break; }
+	}
+
+	BishopMoves = BishopMoves & ~currentBitboard;
+
+	return BishopMoves;
+}
+
+Bitboard Board::QueenRaycasting(char index) {
+	return RookRaycasting(index) | BishopRaycasting(index);
+}

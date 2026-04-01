@@ -5,3 +5,6 @@
 !*.h
 !*.md
 !/LICENSE
+!/src
+!/oldsrc
+!/x64/Release/Epsilon.exe

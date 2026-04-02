@@ -144,6 +144,20 @@ Bitboard Board::QueenRaycasting(Square index) {
 	return RookRaycasting(index) | BishopRaycasting(index);
 }
 
+bool Board::isSquareAttacked(Square index) {
+	Bitboard indexMask = (1ULL << index);
+	Bitboard bufferBitboard = 0;
+	bufferBitboard = generateKnightMoves(index);
+	if (bufferBitboard & (byTypeBB[Knight] & byColorBB[!moveTurn])) { return true; }
+	bufferBitboard = RookRaycasting(index);
+	if ((bufferBitboard & (byTypeBB[Rook] & byColorBB[!moveTurn])) || (bufferBitboard & (byTypeBB[Queen] & byColorBB[!moveTurn]))) { return true; }
+	bufferBitboard = BishopRaycasting(index);
+	if ((bufferBitboard & (byTypeBB[Bishop] & byColorBB[!moveTurn])) || (bufferBitboard & (byTypeBB[Bishop] & byColorBB[!moveTurn]))) { return true; }
+	bufferBitboard = generatePawnMoves(index);
+	if (bufferBitboard & (byTypeBB[Pawn] & byColorBB[!moveTurn])) { return true; }
+	return false;
+}
+
 std::vector<Move> Board::GeneratePseudoLegalMoves(Bitboard anyBoard) {
 	std::vector<Move> PseudoLegalMoves;
 	Bitboard byColorBufferBB = anyBoard;
@@ -172,6 +186,25 @@ std::vector<Move> Board::GeneratePseudoLegalMoves(Bitboard anyBoard) {
 	return PseudoLegalMoves;
 }
 
+std::vector<Move> Board::GenerateLegalMoves(Bitboard anyBoard) {
+	std::vector<Move> LegalMoves;
+	std::vector<Move> PseudoLegalMoves = GeneratePseudoLegalMoves(anyBoard);
+	Bitboard kingMask = byTypeBB[King] & anyBoard;
+	unsigned long kingIndex;
+	_BitScanForward64(&kingIndex, kingMask);
+
+	for (int i = 0; i < PseudoLegalMoves.size(); i++) {
+		makeMove(PseudoLegalMoves[i]);
+		moveTurn = !moveTurn;
+		if (isSquareAttacked(kingIndex) == false) {
+			LegalMoves.push_back(PseudoLegalMoves[i]);
+		}
+		moveTurn = !moveTurn;
+		unmakeMove(PseudoLegalMoves[i]);
+	}
+	return LegalMoves;
+}
+
 Bitboard Board::Perft(int depth) {
 	vector<Move> perftMoves;
 	Bitboard nodes = 0;
@@ -180,7 +213,7 @@ Bitboard Board::Perft(int depth) {
 		return 1ULL;
 	}
 
-	perftMoves = GeneratePseudoLegalMoves(byColorBB[moveTurn]);
+	perftMoves = GenerateLegalMoves(byColorBB[moveTurn]);
 
 	for (int i = 0; i < perftMoves.size(); i++) {
 		makeMove(perftMoves[i]);

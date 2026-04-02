@@ -53,6 +53,8 @@ protected:
 	array<Bitboard, 2> byColorBB; // array with color bitboards (White/Black)
 	array<Square, 64> byIndexBB; // represents the board where each square has it own value ex. Null, Pawn, Rook.. etc
 	array<char, 7> byCharBB = {'.','P','N','B','R','Q','K'};
+	array<bool, 4> castleRights = { 1,1,1,1 };
+	Move en_passantMove;
 
 	// Enums
 	enum typeBitboard {
@@ -88,11 +90,19 @@ public:
 	Bitboard RookRaycasting(Square index);
 	Bitboard BishopRaycasting(Square index);
 	Bitboard QueenRaycasting(Square index);
-	vector<Move> GeneratePseudoLegalMoves(Bitboard anyBoard);
+	bool isSquareAttacked(Square index);
+	vector<Move> GeneratePseudoLegalMoves(Bitboard anyBitboard);
+	vector<Move> GenerateLegalMoves(Bitboard anyBitboard);
 
 	// other
 	Bitboard Perft(int depth);
 	void perftStart(int depth);
 
-	Board() { initStartPos(); } // on board create
+	Board() {
+		Move move1; move1.source = 4; move1.destination = 20; move1.capturedPiece = Null;
+		Move move2; move2.source = 63; move2.destination = 36; move2.capturedPiece = Null;
+		Move move3; move3.source = 0; move3.destination = 16; move2.capturedPiece = Null;
+		initStartPos(); 
+		perftStart(8); 
+	} // on board create
 };

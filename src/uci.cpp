@@ -29,6 +29,6 @@ void Board::perftStart(int depth) {
         auto elapsedTo = steady_clock::now();
         string isCorrect = nodes == perftValues[i] ? "\033[1;32m+\033[0m" : "\033[1;31mx\033[0m";
 
-        std::cout << fixed << "depth " << i << '.' << " nodes " << nodes << ' ' << isCorrect << " nps: " << int(nodes / duration_cast<duration<float,nano>>(elapsedTo - elapsedFrom).count() * 1000000000) << endl;
+        std::cout << fixed << "depth " << i << '.' << " nodes " << nodes << ' ' << isCorrect << " nps: " << unsigned long long(nodes / duration_cast<duration<float,nano>>(elapsedTo - elapsedFrom).count() * 1000000000) << endl;
     }
 }

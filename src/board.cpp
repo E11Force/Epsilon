@@ -5,7 +5,7 @@
 void Board::drawBoard() { // LERF Mapping
 	for (int i = 7; i >= 0; i--) {
 		for (int j = 0; j < 8; j++) {
-			char index = (i * 8 + j);
+			Square index = (i * 8 + j);
 			Bitboard indexMask = (1ULL << index);
 			if (byColorBB[White] & indexMask) { std::cout << byCharBB[byIndexBB[index]] << ' '; }
 			else if (byColorBB[Black] & indexMask) { std::cout << (char)tolower(byCharBB[byIndexBB[index]]) << ' '; }
@@ -13,6 +13,7 @@ void Board::drawBoard() { // LERF Mapping
 		}
 		std::cout << std::endl;
 	}
+	std::cout << std::endl;
 }
 
 void Board::drawBitboard(Bitboard anyBitboard) {
@@ -43,18 +44,15 @@ void Board::initStartPos() {
 	// Index
 	for (int i = 7; i >= 0; i--) {
 		for (int j = 0; j < 8; j++) {
-			char index = (i * 8 + j);
+			Square index = (i * 8 + j);
 			Bitboard indexMask = (1ULL << index);
 			if (byTypeBB[Pawn] & indexMask) { byIndexBB[index] = Pawn; }
 			else if (byTypeBB[King] & indexMask) { byIndexBB[index] = King; }
 			else if (byTypeBB[Queen] & indexMask) { byIndexBB[index] = Queen; }
 			else if (byTypeBB[Bishop] & indexMask) { byIndexBB[index] = Bishop; }
-			else if (byTypeBB[Knight] & indexMask)
-			{ 
-				byIndexBB[index] = Knight; 
-			}
+			else if (byTypeBB[Knight] & indexMask) { byIndexBB[index] = Knight; }
 			else if (byTypeBB[Rook] & indexMask) { byIndexBB[index] = Rook; }
-			else { byIndexBB[index] = Null; }
+			else { byIndexBB[index] = Void; }
 		}
 	}
 }

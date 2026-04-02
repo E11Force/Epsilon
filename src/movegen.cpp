@@ -1,6 +1,7 @@
 #include "board.hpp"
 
-Bitboard Board::generateKnightMoves(char index) {
+// Knight
+Bitboard Board::generateKnightMoves(Square index) {
 	Bitboard IndexMask = (1ULL << index);
 	Bitboard KnightMoves;
 	Bitboard colorBitboard = moveTurn ? byColorBB[White] : byColorBB[Black];
@@ -9,7 +10,8 @@ Bitboard Board::generateKnightMoves(char index) {
 	return KnightMoves;
 }
 
-Bitboard Board::generateKingMoves(char index) {
+// King
+Bitboard Board::generateKingMoves(Square index) {
 	Bitboard IndexMask = (1ULL << index);
 	Bitboard KingMoves;
 	Bitboard colorBitboard = moveTurn ? byColorBB[White] : byColorBB[Black];
@@ -18,7 +20,8 @@ Bitboard Board::generateKingMoves(char index) {
 	return KingMoves;
 }
 
-Bitboard Board::generatePawnMoves(char index) {
+// Pawn
+Bitboard Board::generatePawnMoves(Square index) {
 	Bitboard IndexMask = (1ULL << index);
 	Bitboard PawnMoves = 0;
 	Bitboard colorBitboard = moveTurn ? byColorBB[White] : byColorBB[Black];
@@ -36,8 +39,8 @@ Bitboard Board::generatePawnMoves(char index) {
 	return PawnMoves;
 }
 
-
-Bitboard Board::RookRaycasting(char index) {
+// Rook
+Bitboard Board::RookRaycasting(Square index) {
 	Bitboard IndexMask(1ULL << index);
 	Bitboard RookMoves = 0;
 	Bitboard enemyBitboard = moveTurn ? byColorBB[Black] : byColorBB[White];
@@ -45,34 +48,39 @@ Bitboard Board::RookRaycasting(char index) {
 
 	while ((IndexMask & notRank1) != 0) {
 		IndexMask = IndexMask >> 8;
+		if ((IndexMask & ~currentBitboard) == 0) { break; } // if he got into our piece
 		RookMoves |= IndexMask;
 		if ((IndexMask & ~enemyBitboard) == 0) { break; }
 	}
 	IndexMask = (1ULL << index);
 	while ((IndexMask & notRank8) != 0) {
 		IndexMask = IndexMask << 8;
+		if ((IndexMask & ~currentBitboard) == 0) { break; }
 		RookMoves |= IndexMask;
 		if ((IndexMask & ~enemyBitboard) == 0) { break; }
 	}
 	IndexMask = (1ULL << index);
 	while ((IndexMask & notfileA) != 0) {
 		IndexMask = IndexMask >> 1;
+		if ((IndexMask & ~currentBitboard) == 0) { break; }
 		RookMoves |= IndexMask;
 		if ((IndexMask & ~enemyBitboard) == 0) { break; }
 	}
 	IndexMask = (1ULL << index);
 	while ((IndexMask & notfileH) != 0) {
 		IndexMask = IndexMask << 1;
+		if ((IndexMask & ~currentBitboard) == 0) { break; }
 		RookMoves |= IndexMask;
 		if ((IndexMask & ~enemyBitboard) == 0) { break; }
 	}
 
-	RookMoves = RookMoves & ~currentBitboard;
+	//RookMoves = RookMoves & ~currentBitboard;
 
 	return RookMoves;
 }
 
-Bitboard Board::BishopRaycasting(char index) {
+// Bishop
+Bitboard Board::BishopRaycasting(Square index) {
 	Bitboard IndexMask(1ULL << index);
 	Bitboard BishopMoves = 0;
 	Bitboard enemyBitboard = moveTurn ? byColorBB[Black] : byColorBB[White];
@@ -80,33 +88,62 @@ Bitboard Board::BishopRaycasting(char index) {
 
 	while ((IndexMask & notRank8 & notfileH) != 0) {
 		IndexMask = IndexMask << 9;
+		if ((IndexMask & ~currentBitboard) == 0) { break; }
 		BishopMoves |= IndexMask;
 		if ((IndexMask & ~enemyBitboard) == 0) { break; }
 	}
 	IndexMask = (1ULL << index);
 	while ((IndexMask & notRank1 & notfileH) != 0) {
 		IndexMask = IndexMask >> 7;
+		if ((IndexMask & ~currentBitboard) == 0) { break; }
 		BishopMoves |= IndexMask;
 		if ((IndexMask & ~enemyBitboard) == 0) { break; }
 	}
 	IndexMask = (1ULL << index);
 	while ((IndexMask & notfileA & notRank1) != 0) {
 		IndexMask = IndexMask >> 9;
+		if ((IndexMask & ~currentBitboard) == 0) { break; }
 		BishopMoves |= IndexMask;
 		if ((IndexMask & ~enemyBitboard) == 0) { break; }
 	}
 	IndexMask = (1ULL << index);
 	while ((IndexMask & notfileA & notRank8) != 0) {
 		IndexMask = IndexMask << 7;
+		if ((IndexMask & ~currentBitboard) == 0) { break; }
 		BishopMoves |= IndexMask;
 		if ((IndexMask & ~enemyBitboard) == 0) { break; }
 	}
 
-	BishopMoves = BishopMoves & ~currentBitboard;
+	//BishopMoves = BishopMoves & ~currentBitboard;
 
 	return BishopMoves;
 }
 
-Bitboard Board::QueenRaycasting(char index) {
+// Queen
+Bitboard Board::QueenRaycasting(Square index) {
 	return RookRaycasting(index) | BishopRaycasting(index);
+}
+
+void Board::makeMove(Square sourceIndex, Square destinationIndex) {
+	Bitboard sourceMask = (1ULL << sourceIndex);
+	Bitboard destinationMask = (1ULL << destinationIndex);
+
+	if (byIndexBB[destinationIndex] != Void) { // if there was an enemy
+		byTypeBB[byIndexBB[destinationIndex]] = byTypeBB[byIndexBB[destinationIndex]] & ~destinationMask;
+		byColorBB[!moveTurn] = byColorBB[!moveTurn] & ~destinationMask;
+	} // continue
+	byTypeBB[byIndexBB[sourceIndex]] = byTypeBB[byIndexBB[sourceIndex]] & ~sourceMask | destinationMask;
+	byColorBB[moveTurn] = byColorBB[moveTurn] & ~sourceMask | destinationMask;
+	byIndexBB[destinationIndex] = byIndexBB[sourceIndex];
+	byIndexBB[sourceIndex] = Void;
+}
+
+void Board::unmakeMove(Square sourceIndex, Square destinationIndex, Square capturedPiece) {
+	Bitboard sourceMask = (1ULL << sourceIndex);
+	Bitboard destinationMask = (1ULL << destinationIndex);
+	byIndexBB[sourceIndex] = byIndexBB[destinationIndex];
+	byIndexBB[destinationIndex] = capturedPiece;
+	byTypeBB[byIndexBB[destinationIndex]] = byTypeBB[byIndexBB[destinationIndex]] | destinationMask;
+	byTypeBB[byIndexBB[capturedPiece]] = byTypeBB[byIndexBB[capturedPiece]] & ~destinationMask | sourceMask ;
+	byColorBB[moveTurn] = byColorBB[moveTurn] | sourceMask;
 }

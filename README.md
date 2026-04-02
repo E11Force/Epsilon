@@ -5,7 +5,6 @@
 Epsilon - is a competitive open-source chess engine created by [**Fozik**](https://github.com/SimplyFozik) using C++ as the main language.
 
 > [!NOTE]
-
 > This engine is on alpha testing and still being under development
 
 ### Usage

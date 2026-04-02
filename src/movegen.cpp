@@ -173,12 +173,15 @@ std::vector<Move> Board::GeneratePseudoLegalMoves(Bitboard anyBoard) {
 }
 
 Bitboard Board::Perft(int depth) {
-	std::vector<Move> perftMoves;
+	vector<Move> perftMoves;
 	Bitboard nodes = 0;
 
-	if (depth == 0) { return 1ULL; }
+	if (depth == 0) {
+		return 1ULL;
+	}
 
 	perftMoves = GeneratePseudoLegalMoves(byColorBB[moveTurn]);
+
 	for (int i = 0; i < perftMoves.size(); i++) {
 		makeMove(perftMoves[i]);
 		nodes += Perft(depth - 1);

@@ -21,13 +21,11 @@
 #include <cstdint>
 #include <array>
 #include <vector>
-#include <chrono>
 
 // Namespaces
 using Bitboard = uint_fast64_t; // uint64_t / uint_fast64_t
 using Square = uint_fast8_t; // uint8_t / uint_fast8_t
 using namespace std;
-using namespace chrono;
 
 // structures
 struct Move {
@@ -46,6 +44,7 @@ constexpr Bitboard notRank1 =	(0xffffffffffffff00);
 constexpr Bitboard notRank8 =	(0xffffffffffffff);
 constexpr Bitboard rank4 =		(0xff000000);
 constexpr Bitboard rank5 =		(0xff00000000);
+constexpr array<unsigned long long, 10> perftValues{ 1,20,400,8902,197281,4865609,119060324,3195901860,84998978956,2439530234167 };
 
 class Board { // LERF Mapping
 protected:
@@ -93,15 +92,7 @@ public:
 
 	// other
 	Bitboard Perft(int depth);
+	void perftStart(int depth);
 
-	Board() {
-		initStartPos();
-		drawBoard();
-		for (int i = 0; i < 7; i++) {
-			steady_clock::time_point startMeasurement = steady_clock::now();
-			unsigned long long nodes = Perft(i);
-			steady_clock::time_point endMeasurement = steady_clock::now();
-			cout << fixed << "depth " << i << ". nodes " << nodes << " nps: " << (nodes / duration_cast<duration<float,nano>>(endMeasurement - startMeasurement).count() * 1000000000) << endl;
-		}
-	} // on board create
+	Board() { initStartPos(); } // on board create
 };

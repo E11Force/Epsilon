@@ -40,8 +40,8 @@ void Board::drawBitboard(Bitboard anyBitboard) {
 	for (int i = 7; i >= 0; i--) {
 		for (int j = 0; j < 8; j++) {
 			Bitboard indexMask = (1ULL << (i * 8 + j));
-			if (anyBitboard & indexMask) { std::cout << "1 "; }
-			else { std::cout << ". "; }
+			if (anyBitboard & indexMask) { std::cout << "\033[1;32m1 \033[0m"; }
+			else { std::cout << "\033[1;37m. \033[0m"; }
 		}
 		std::cout << std::endl;
 	}
@@ -82,14 +82,12 @@ void Board::makeMove(Move& move) {
 	Bitboard sourceMask = (1ULL << move.source);
 	Bitboard destinationMask = (1ULL << move.destination);
 
-	if (byIndexBB[move.destination] != Null) { // if there was an enemy
-		byTypeBB[byIndexBB[move.destination]] = byTypeBB[byIndexBB[move.destination]] & ~destinationMask;
-		byColorBB[!moveTurn] = byColorBB[!moveTurn] & ~destinationMask;
-	} // continue
+	if (byIndexBB[move.destination] != Null) { byTypeBB[byIndexBB[move.destination]] = byTypeBB[byIndexBB[move.destination]] & ~destinationMask; }
 	byTypeBB[byIndexBB[move.source]] = byTypeBB[byIndexBB[move.source]] & ~sourceMask | destinationMask;
-	byColorBB[moveTurn] = byColorBB[moveTurn] & ~sourceMask | destinationMask;
 	byIndexBB[move.destination] = byIndexBB[move.source];
 	byIndexBB[move.source] = Null;
+	byColorBB[moveTurn] = byColorBB[moveTurn] & ~sourceMask | destinationMask;
+	byColorBB[!moveTurn] = byColorBB[!moveTurn] & ~destinationMask;
 	moveTurn = !moveTurn;
 }
 
@@ -97,10 +95,11 @@ void Board::unmakeMove(Move& move) {
 	moveTurn = !moveTurn;
 	Bitboard sourceMask = (1ULL << move.source);
 	Bitboard destinationMask = (1ULL << move.destination);
+
+	if (byIndexBB[move.destination] != Null) { byTypeBB[byIndexBB[move.destination]] = byTypeBB[byIndexBB[move.destination]] & ~destinationMask | sourceMask; }
+	byTypeBB[move.capturedPiece] |= destinationMask;
 	byIndexBB[move.source] = byIndexBB[move.destination];
-	byTypeBB[byIndexBB[move.source]] = byTypeBB[byIndexBB[move.source]] & ~destinationMask | sourceMask;
 	byIndexBB[move.destination] = move.capturedPiece;
-	if (move.capturedPiece != Null) { byTypeBB[byIndexBB[move.destination]] = byTypeBB[byIndexBB[move.destination]] | destinationMask; }
 	byColorBB[moveTurn] = byColorBB[moveTurn] & ~destinationMask | sourceMask;
-	if (move.capturedPiece != Null) { byColorBB[!moveTurn] = byColorBB[!moveTurn] | destinationMask; }
+	if (byIndexBB[move.destination] != Null) { byColorBB[!moveTurn] = byColorBB[!moveTurn] | destinationMask; }
 }

@@ -15,3 +15,20 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+
+#include <iostream>
+#include <chrono>
+#include "board.hpp"
+
+using namespace chrono;
+
+void Board::perftStart(int depth) {
+    for (int i = 0; i < depth; i++) {
+        auto elapsedFrom = steady_clock::now();
+        Bitboard nodes = Perft(i);
+        auto elapsedTo = steady_clock::now();
+        string isCorrect = nodes == perftValues[i] ? "\033[1;32m+\033[0m" : "\033[1;31mx\033[0m";
+
+        std::cout << fixed << "depth " << i << '.' << " nodes " << nodes << ' ' << isCorrect << " nps: " << int(nodes / duration_cast<duration<float,nano>>(elapsedTo - elapsedFrom).count() * 1000000000) << endl;
+    }
+}

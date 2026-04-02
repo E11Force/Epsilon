@@ -17,10 +17,12 @@
 */
 
 #include <iostream>
+#include <windows.h>
 #include "board.hpp"
 
 using namespace std;
 
 int main() {
+    //SetConsoleOutputCP(65001);
 	Board ChessBoard;
 }

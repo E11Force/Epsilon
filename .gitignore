@@ -6,5 +6,5 @@
 !*.md
 !/LICENSE
 !/src
-!/oldsrc
+!/epsilonArchive
 !/x64/Release/Epsilon.exe

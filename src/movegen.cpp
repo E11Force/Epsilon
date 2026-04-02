@@ -16,6 +16,8 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <vector>
+#include <intrin.h>
 #include "board.hpp"
 
 // Knight
@@ -142,26 +144,45 @@ Bitboard Board::QueenRaycasting(Square index) {
 	return RookRaycasting(index) | BishopRaycasting(index);
 }
 
-void Board::makeMove(Square sourceIndex, Square destinationIndex) {
-	Bitboard sourceMask = (1ULL << sourceIndex);
-	Bitboard destinationMask = (1ULL << destinationIndex);
+std::vector<Move> Board::GeneratePseudoLegalMoves(Bitboard anyBoard) {
+	std::vector<Move> PseudoLegalMoves;
+	Bitboard byColorBufferBB = anyBoard;
+	Bitboard bufferBitboard = 0;
 
-	if (byIndexBB[destinationIndex] != Void) { // if there was an enemy
-		byTypeBB[byIndexBB[destinationIndex]] = byTypeBB[byIndexBB[destinationIndex]] & ~destinationMask;
-		byColorBB[!moveTurn] = byColorBB[!moveTurn] & ~destinationMask;
-	} // continue
-	byTypeBB[byIndexBB[sourceIndex]] = byTypeBB[byIndexBB[sourceIndex]] & ~sourceMask | destinationMask;
-	byColorBB[moveTurn] = byColorBB[moveTurn] & ~sourceMask | destinationMask;
-	byIndexBB[destinationIndex] = byIndexBB[sourceIndex];
-	byIndexBB[sourceIndex] = Void;
+	while (byColorBufferBB != 0) {
+		unsigned long index = 0;
+		_BitScanForward64(&index, byColorBufferBB);
+
+		if (byIndexBB[index] == Pawn) { bufferBitboard = generatePawnMoves(index); }
+		else if (byIndexBB[index] == Knight) { bufferBitboard = generateKnightMoves(index); }
+		else if (byIndexBB[index] == Bishop) { bufferBitboard = BishopRaycasting(index); }
+		else if (byIndexBB[index] == Rook) { bufferBitboard = RookRaycasting(index); }
+		else if (byIndexBB[index] == Queen) { bufferBitboard = QueenRaycasting(index); }
+		else if (byIndexBB[index] == King) { bufferBitboard = generateKingMoves(index); }
+
+		while (bufferBitboard != 0) {
+			unsigned long bufferIndex = 0;
+			_BitScanForward64(&bufferIndex, bufferBitboard);
+			Move pseudoMove; pseudoMove.source = index; pseudoMove.destination = bufferIndex; pseudoMove.capturedPiece = byIndexBB[bufferIndex];
+			PseudoLegalMoves.push_back(pseudoMove);
+			bufferBitboard &= bufferBitboard - 1;
+		}
+		byColorBufferBB &= byColorBufferBB - 1;
+	}
+	return PseudoLegalMoves;
 }
 
-void Board::unmakeMove(Square sourceIndex, Square destinationIndex, Square capturedPiece) {
-	Bitboard sourceMask = (1ULL << sourceIndex);
-	Bitboard destinationMask = (1ULL << destinationIndex);
-	byIndexBB[sourceIndex] = byIndexBB[destinationIndex];
-	byIndexBB[destinationIndex] = capturedPiece;
-	byTypeBB[byIndexBB[destinationIndex]] = byTypeBB[byIndexBB[destinationIndex]] | destinationMask;
-	byTypeBB[byIndexBB[capturedPiece]] = byTypeBB[byIndexBB[capturedPiece]] & ~destinationMask | sourceMask ;
-	byColorBB[moveTurn] = byColorBB[moveTurn] | sourceMask;
+Bitboard Board::Perft(int depth) {
+	std::vector<Move> perftMoves;
+	Bitboard nodes = 0;
+
+	if (depth == 0) { return 1ULL; }
+
+	perftMoves = GeneratePseudoLegalMoves(byColorBB[moveTurn]);
+	for (int i = 0; i < perftMoves.size(); i++) {
+		makeMove(perftMoves[i]);
+		nodes += Perft(depth - 1);
+		unmakeMove(perftMoves[i]);
+	}
+	return nodes;
 }

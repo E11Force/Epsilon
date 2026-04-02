@@ -17,13 +17,17 @@
 */
 
 #pragma once
+#include <iostream>
 #include <cstdint>
 #include <array>
-#include <iostream>
+#include <vector>
+#include <chrono>
 
 // Namespaces
 using Bitboard = uint_fast64_t; // uint64_t / uint_fast64_t
 using Square = uint_fast8_t; // uint8_t / uint_fast8_t
+using namespace std;
+using namespace chrono;
 
 // structures
 struct Move {
@@ -46,14 +50,14 @@ constexpr Bitboard rank5 =		(0xff00000000);
 class Board { // LERF Mapping
 protected:
 	// Bitboards
-	std::array<Bitboard, 7> byTypeBB; // array with all piece bitboards (uint_fast64_t is more performant than simple uint64_t or ULL) ex. Pawns Rooks..
-	std::array<Bitboard, 2> byColorBB; // array with color bitboards (White/Black)
-	std::array<Square, 64> byIndexBB; // represents the board where each square has it own value ex. Void, Pawn, Rook.. etc
-	std::array<char, 7> byCharBB = {'.','P','N','B','R','Q','K'};
+	array<Bitboard, 7> byTypeBB; // array with all piece bitboards (uint_fast64_t is more performant than simple uint64_t or ULL) ex. Pawns Rooks..
+	array<Bitboard, 2> byColorBB; // array with color bitboards (White/Black)
+	array<Square, 64> byIndexBB; // represents the board where each square has it own value ex. Null, Pawn, Rook.. etc
+	array<char, 7> byCharBB = {'.','P','N','B','R','Q','K'};
 
 	// Enums
 	enum typeBitboard {
-		Void = 0,
+		Null = 0,
 		Pawn,
 		Knight,
 		Bishop,
@@ -75,8 +79,8 @@ public:
 	void initStartPos();
 	void drawBitboard(Bitboard anyBitboard);
 	void drawBoard();
-	void makeMove(Square sourceIndex, Square destinationIndex);
-	void unmakeMove(Square sourceIndex, Square destinationIndex, Square capturedPiece);
+	void makeMove(Move& move);
+	void unmakeMove(Move& move);
 
 	// move generation functions
 	Bitboard generateKnightMoves(Square index);
@@ -85,9 +89,19 @@ public:
 	Bitboard RookRaycasting(Square index);
 	Bitboard BishopRaycasting(Square index);
 	Bitboard QueenRaycasting(Square index);
+	vector<Move> GeneratePseudoLegalMoves(Bitboard anyBoard);
+
+	// other
+	Bitboard Perft(int depth);
 
 	Board() {
 		initStartPos();
 		drawBoard();
+		for (int i = 0; i < 7; i++) {
+			steady_clock::time_point startMeasurement = steady_clock::now();
+			unsigned long long nodes = Perft(i);
+			steady_clock::time_point endMeasurement = steady_clock::now();
+			cout << fixed << "depth " << i << ". nodes " << nodes << " nps: " << (nodes / duration_cast<duration<float,nano>>(endMeasurement - startMeasurement).count() * 1000000000) << endl;
+		}
 	} // on board create
 };

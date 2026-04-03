@@ -51,12 +51,12 @@ void Board::drawBitboard(Bitboard anyBitboard) {
 // Board manipulation functions
 void Board::initStartPos() {
 	// Pieces
-	byTypeBB[Pawn] =	0xFF00000000FF00;
-	byTypeBB[King] =	0x1000000000000010;
-	byTypeBB[Queen] =	0x800000000000008;
-	byTypeBB[Bishop] =	0x2400000000000024;
-	byTypeBB[Knight] =	0x4200000000000042;
-	byTypeBB[Rook] =	0x8100000000000081;
+	byTypeBB[Pawn] =	0xFF00000000FF00ULL;
+	byTypeBB[King] =	0x1000000000000010ULL;
+	byTypeBB[Queen] =	0x800000000000008ULL;
+	byTypeBB[Bishop] =	0x2400000000000024ULL;
+	byTypeBB[Knight] =	0x4200000000000042ULL;
+	byTypeBB[Rook] =	(0x8100000000000081);
 	
 	// Colors
 	byColorBB[White] =	0xffff;
@@ -67,21 +67,77 @@ void Board::initStartPos() {
 		for (int j = 0; j < 8; j++) {
 			Square index = (i * 8 + j);
 			Bitboard indexMask = (1ULL << index);
-			if (byTypeBB[Pawn] & indexMask) { byIndexBB[index] = Pawn; }
-			else if (byTypeBB[King] & indexMask) { byIndexBB[index] = King; }
-			else if (byTypeBB[Queen] & indexMask) { byIndexBB[index] = Queen; }
-			else if (byTypeBB[Bishop] & indexMask) { byIndexBB[index] = Bishop; }
-			else if (byTypeBB[Knight] & indexMask) { byIndexBB[index] = Knight; }
-			else if (byTypeBB[Rook] & indexMask) { byIndexBB[index] = Rook; }
-			else { byIndexBB[index] = Null; }
+			if (byTypeBB[Pawn] & indexMask) { byIndexBB[index] = Pawn; byRights[index] = 15; }
+			else if (byTypeBB[King] & indexMask) { 
+				byIndexBB[index] = King; 
+				if (byColorBB[White] & byTypeBB[King] & indexMask) { byRights[index] = 12; }
+				else if (byColorBB[Black] & byTypeBB[King]) { byRights[index] = 3; }
+			}
+			else if (byTypeBB[Queen] & indexMask) { byIndexBB[index] = Queen; byRights[index] = 15; }
+			else if (byTypeBB[Bishop] & indexMask) { byIndexBB[index] = Bishop; byRights[index] = 15; }
+			else if (byTypeBB[Knight] & indexMask) { byIndexBB[index] = Knight; byRights[index] = 15; }
+			else if (byTypeBB[Rook] & indexMask) { 
+				byIndexBB[index] = Rook;
+				if (~notfileA & byTypeBB[Rook] & byColorBB[White] & indexMask) { byRights[index] = 13; }
+				else if (~notfileA & byTypeBB[Rook] & byColorBB[Black] & indexMask) { byRights[index] = 7; }
+				else if (~notfileH & byTypeBB[Rook] & byColorBB[White] & indexMask) { byRights[index] = 14; }
+				else if (~notfileH & byTypeBB[Rook] & byColorBB[Black] & indexMask) { byRights[index] = 11; }
+			}
+			else { byIndexBB[index] = Null; byRights[index] = 15; }
 		}
 	}
+
+
+}
+
+bool Board::isCastling(Move& move) {
+	if (byIndexBB[move.source] == King && abs(move.destination - move.source) == 2) { return true; }
+	else { return false; }
 }
 
 void Board::makeMove(Move& move) {
 	Bitboard sourceMask = (1ULL << move.source);
 	Bitboard destinationMask = (1ULL << move.destination);
 
+	if (isCastling(move) == true) { 
+		switch (move.destination) {
+		case 6: {
+			Bitboard sourceMask = (1ULL << 7);
+			Bitboard destinationMask = (1ULL << 5);
+			byTypeBB[Rook] = (byTypeBB[Rook] & ~sourceMask) | destinationMask;
+			byColorBB[moveTurn] = (byColorBB[moveTurn] & ~sourceMask) | destinationMask;
+			byIndexBB[7] = Null; byIndexBB[5] = Rook;
+			break;
+		}
+		case 2: {
+			Bitboard sourceMask = (1ULL << 0);
+			Bitboard destinationMask = (1ULL << 3);
+			byTypeBB[Rook] = (byTypeBB[Rook] & ~sourceMask) | destinationMask;
+			byColorBB[moveTurn] = (byColorBB[moveTurn] & ~sourceMask) | destinationMask;
+			byIndexBB[0] = Null; byIndexBB[3] = Rook;
+			break;
+		}
+		case 62: {
+			Bitboard sourceMask = (1ULL << 63);
+			Bitboard destinationMask = (1ULL << 61);
+			byTypeBB[Rook] = (byTypeBB[Rook] & ~sourceMask) | destinationMask;
+			byColorBB[moveTurn] = (byColorBB[moveTurn] & ~sourceMask) | destinationMask;
+			byIndexBB[63] = Null; byIndexBB[61] = Rook;
+			break;
+		}
+		case 58: {
+			Bitboard sourceMask = (1ULL << 56);
+			Bitboard destinationMask = (1ULL << 59);
+			byTypeBB[Rook] = (byTypeBB[Rook] & ~sourceMask) | destinationMask;
+			byColorBB[moveTurn] = (byColorBB[moveTurn] & ~sourceMask) | destinationMask;
+			byIndexBB[56] = Null; byIndexBB[59] = Rook;
+			break;
+		}
+		}
+	}
+	
+
+	castleRights = castleRights & byRights[move.source] & byRights[move.destination];
 	if (byIndexBB[move.destination] != Null) { byTypeBB[byIndexBB[move.destination]] = byTypeBB[byIndexBB[move.destination]] & ~destinationMask; }
 	byTypeBB[byIndexBB[move.source]] = byTypeBB[byIndexBB[move.source]] & ~sourceMask | destinationMask;
 	byIndexBB[move.destination] = byIndexBB[move.source];
@@ -96,6 +152,44 @@ void Board::unmakeMove(Move& move) {
 	Bitboard sourceMask = (1ULL << move.source);
 	Bitboard destinationMask = (1ULL << move.destination);
 
+	if (isCastling(move) == true) {
+		switch (move.destination) {
+		case 6: {
+			Bitboard sourceMask = (1ULL << 7);
+			Bitboard destinationMask = (1ULL << 5);
+			byTypeBB[Rook] = (byTypeBB[Rook] & ~destinationMask) | sourceMask;
+			byColorBB[moveTurn] = (byColorBB[moveTurn] & ~destinationMask) | sourceMask;
+			byIndexBB[7] = Rook; byIndexBB[5] = Null;
+			break;
+		}
+		case 2: {
+			Bitboard sourceMask = (1ULL << 0);
+			Bitboard destinationMask = (1ULL << 3);
+			byTypeBB[Rook] = (byTypeBB[Rook] & ~destinationMask) | sourceMask;
+			byColorBB[moveTurn] = (byColorBB[moveTurn] & ~destinationMask) | sourceMask;
+			byIndexBB[0] = Rook; byIndexBB[3] = Null;
+			break;
+		}
+		case 62: {
+			Bitboard sourceMask = (1ULL << 63);
+			Bitboard destinationMask = (1ULL << 61);
+			byTypeBB[Rook] = (byTypeBB[Rook] & ~destinationMask) | sourceMask;
+			byColorBB[moveTurn] = (byColorBB[moveTurn] & ~destinationMask) | sourceMask;
+			byIndexBB[63] = Rook; byIndexBB[61] = Null;
+			break;
+		}
+		case 58: {
+			Bitboard sourceMask = (1ULL << 56);
+			Bitboard destinationMask = (1ULL << 59);
+			byTypeBB[Rook] = (byTypeBB[Rook] & ~destinationMask) | sourceMask;
+			byColorBB[moveTurn] = (byColorBB[moveTurn] & ~destinationMask) | sourceMask;
+			byIndexBB[56] = Rook; byIndexBB[59] = Null;
+			break;
+		}
+		}
+	}
+
+	castleRights = move.buffer_castleRights;
 	if (byIndexBB[move.destination] != Null) { byTypeBB[byIndexBB[move.destination]] = byTypeBB[byIndexBB[move.destination]] & ~destinationMask | sourceMask; }
 	byTypeBB[move.capturedPiece] |= destinationMask;
 	byIndexBB[move.source] = byIndexBB[move.destination];

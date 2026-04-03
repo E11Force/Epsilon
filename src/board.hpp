@@ -32,6 +32,8 @@ struct Move {
 	Square source;
 	Square destination;
 	Square capturedPiece;
+	Square buffer_epSquare;
+	uint8_t buffer_castleRights;
 };
 
 
@@ -52,9 +54,10 @@ protected:
 	array<Bitboard, 7> byTypeBB; // array with all piece bitboards (uint_fast64_t is more performant than simple uint64_t or ULL) ex. Pawns Rooks..
 	array<Bitboard, 2> byColorBB; // array with color bitboards (White/Black)
 	array<Square, 64> byIndexBB; // represents the board where each square has it own value ex. Null, Pawn, Rook.. etc
+	array<Square, 64> byRights;
 	array<char, 7> byCharBB = {'.','P','N','B','R','Q','K'};
-	array<bool, 4> castleRights = { 1,1,1,1 };
-	Move en_passantMove;
+	uint8_t castleRights = 15; // mask for castling
+	Square en_passantMove;
 
 	// Enums
 	enum typeBitboard {
@@ -91,6 +94,7 @@ public:
 	Bitboard BishopRaycasting(Square index);
 	Bitboard QueenRaycasting(Square index);
 	bool isSquareAttacked(Square index);
+	bool isCastling(Move& move);
 	vector<Move> GeneratePseudoLegalMoves(Bitboard anyBitboard);
 	vector<Move> GenerateLegalMoves(Bitboard anyBitboard);
 
@@ -99,10 +103,7 @@ public:
 	void perftStart(int depth);
 
 	Board() {
-		Move move1; move1.source = 4; move1.destination = 20; move1.capturedPiece = Null;
-		Move move2; move2.source = 63; move2.destination = 36; move2.capturedPiece = Null;
-		Move move3; move3.source = 0; move3.destination = 16; move2.capturedPiece = Null;
-		initStartPos(); 
-		perftStart(8); 
+		initStartPos();
+		perftStart(7); 
 	} // on board create
 };

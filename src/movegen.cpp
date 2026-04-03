@@ -152,9 +152,11 @@ bool Board::isSquareAttacked(Square index) {
 	bufferBitboard = RookRaycasting(index);
 	if ((bufferBitboard & (byTypeBB[Rook] & byColorBB[!moveTurn])) || (bufferBitboard & (byTypeBB[Queen] & byColorBB[!moveTurn]))) { return true; }
 	bufferBitboard = BishopRaycasting(index);
-	if ((bufferBitboard & (byTypeBB[Bishop] & byColorBB[!moveTurn])) || (bufferBitboard & (byTypeBB[Bishop] & byColorBB[!moveTurn]))) { return true; }
+	if ((bufferBitboard & (byTypeBB[Bishop] & byColorBB[!moveTurn])) || (bufferBitboard & (byTypeBB[Queen] & byColorBB[!moveTurn]))) { return true; }
 	bufferBitboard = generatePawnMoves(index);
 	if (bufferBitboard & (byTypeBB[Pawn] & byColorBB[!moveTurn])) { return true; }
+	bufferBitboard = generateKingMoves(index);
+	if (bufferBitboard & (byTypeBB[King] & byColorBB[!moveTurn])) { return true; }
 	return false;
 }
 
@@ -172,12 +174,22 @@ std::vector<Move> Board::GeneratePseudoLegalMoves(Bitboard anyBoard) {
 		else if (byIndexBB[index] == Bishop) { bufferBitboard = BishopRaycasting(index); }
 		else if (byIndexBB[index] == Rook) { bufferBitboard = RookRaycasting(index); }
 		else if (byIndexBB[index] == Queen) { bufferBitboard = QueenRaycasting(index); }
-		else if (byIndexBB[index] == King) { bufferBitboard = generateKingMoves(index); }
+		else if (byIndexBB[index] == King) { 
+			bufferBitboard = generateKingMoves(index); 
+			if (moveTurn == White) {
+				if ((castleRights & 1) != 0 && (byIndexBB[5] == Null && byIndexBB[6] == Null)) { bufferBitboard |= (1ULL << 6); }	// we can make white short castling
+				if ((castleRights & 2) != 0 && (byIndexBB[3] == Null && byIndexBB[2] == Null && byIndexBB[1] == Null)) { bufferBitboard |= (1ULL << 2); }
+			}
+			else if (moveTurn == Black) {
+				if ((castleRights & 4) != 0 && (byIndexBB[61] == Null && byIndexBB[62] == Null)) { bufferBitboard |= (1ULL << 62); }
+				if ((castleRights & 8) != 0 && (byIndexBB[59] == Null && byIndexBB[58] == Null && byIndexBB[57] == Null)) { bufferBitboard |= (1ULL << 58); }
+			}
+		}
 
 		while (bufferBitboard != 0) {
 			unsigned long bufferIndex = 0;
 			_BitScanForward64(&bufferIndex, bufferBitboard);
-			Move pseudoMove; pseudoMove.source = index; pseudoMove.destination = bufferIndex; pseudoMove.capturedPiece = byIndexBB[bufferIndex];
+			Move pseudoMove; pseudoMove.source = index; pseudoMove.destination = bufferIndex; pseudoMove.capturedPiece = byIndexBB[bufferIndex]; pseudoMove.buffer_castleRights = castleRights;
 			PseudoLegalMoves.push_back(pseudoMove);
 			bufferBitboard &= bufferBitboard - 1;
 		}
@@ -189,12 +201,12 @@ std::vector<Move> Board::GeneratePseudoLegalMoves(Bitboard anyBoard) {
 std::vector<Move> Board::GenerateLegalMoves(Bitboard anyBoard) {
 	std::vector<Move> LegalMoves;
 	std::vector<Move> PseudoLegalMoves = GeneratePseudoLegalMoves(anyBoard);
-	Bitboard kingMask = byTypeBB[King] & anyBoard;
 	unsigned long kingIndex;
-	_BitScanForward64(&kingIndex, kingMask);
 
 	for (int i = 0; i < PseudoLegalMoves.size(); i++) {
 		makeMove(PseudoLegalMoves[i]);
+		Bitboard kingMask = byTypeBB[King] & byColorBB[!moveTurn];
+		_BitScanForward64(&kingIndex, kingMask);
 		moveTurn = !moveTurn;
 		if (isSquareAttacked(kingIndex) == false) {
 			LegalMoves.push_back(PseudoLegalMoves[i]);
